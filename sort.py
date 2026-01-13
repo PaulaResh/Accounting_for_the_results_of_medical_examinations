@@ -18,15 +18,12 @@ def quicksort(arr, key_func, reverse=False):
     Returns:
         list: Отсортированный список
     '''
-    # Базовый случай рекурсии
     if len(arr) <= 1:
         return arr
 
-    # Выбираем опорный элемент (середина массива)
     pivot = arr[len(arr) // 2]
     pivot_key = key_func(pivot)
 
-    # Разделяем массив на три части
     less = []
     equal = []
     greater = []
@@ -40,7 +37,6 @@ def quicksort(arr, key_func, reverse=False):
         else:
             greater.append(item)
 
-    # Рекурсивно сортируем и объединяем результаты
     if reverse:
         return quicksort(greater, key_func, reverse) + equal + quicksort(less, key_func, reverse)
     else:
@@ -50,7 +46,6 @@ def quicksort(arr, key_func, reverse=False):
 def sort_by_health_then_name(records):
     '''
     Сортировка по убыванию количества здоровых заключений, затем по фамилии.
-    Оптимизированная версия, использует предвычисленные значения.
 
     Args:
         records (list): Список записей
@@ -58,10 +53,10 @@ def sort_by_health_then_name(records):
     Returns:
         list: Отсортированный список
     '''
+    from utils import count_healthy_specialists
 
     def key_func(record):
-        # Используем предвычисленное количество здоровых или вычисляем на лету
-        healthy = record.get('_healthy_count', 0)
+        healthy = count_healthy_specialists(record)
         return (-healthy, record['фамилия'].lower())
 
     return quicksort(records, key_func)
@@ -70,7 +65,6 @@ def sort_by_health_then_name(records):
 def sort_by_birth_date(records):
     '''
     Сортировка по дате рождения (год, месяц, день).
-    Оптимизированная версия с быстрым парсингом даты.
 
     Args:
         records (list): Список записей
@@ -80,12 +74,8 @@ def sort_by_birth_date(records):
     '''
 
     def key_func(record):
-        date_str = record['дата_рождения']
-        # Быстрый парсинг даты (только для сортировки)
-        parts = date_str.split('-')
-        if len(parts) == 3:
-            return (int(parts[0]), int(parts[1]), int(parts[2]))
-        return (0, 0, 0)  # В случае ошибки формата
+        year, month, day = parse_date(record['дата_рождения'])
+        return (year, month, day)
 
     return quicksort(records, key_func)
 
@@ -93,7 +83,6 @@ def sort_by_birth_date(records):
 def sort_by_group_then_name(records):
     '''
     Сортировка по группе, затем по фамилии.
-    Использует числовые значения групп для быстрого сравнения.
 
     Args:
         records (list): Список записей
@@ -101,29 +90,6 @@ def sort_by_group_then_name(records):
     Returns:
         list: Отсортированный список
     '''
-    # Порядок сортировки групп
-    group_order = {'младшая': 1, 'средняя': 2, 'старшая': 3}
-
-    def key_func(record):
-        group = record['группа'].lower()
-        group_num = group_order.get(group, 99)  # 99 для неизвестных групп
-        return (group_num, record['фамилия'].lower())
-
-    return quicksort(records, key_func)
-
-
-def sort_by_health_group_name(records):
-    '''
-    Специальная сортировка для отчета 3: группа + фамилия.
-    Оптимизированная версия.
-
-    Args:
-        records (list): Список записей, нуждающихся в лечении
-
-    Returns:
-        list: Отсортированный список
-    '''
-    # Порядок сортировки групп
     group_order = {'младшая': 1, 'средняя': 2, 'старшая': 3}
 
     def key_func(record):
@@ -134,18 +100,21 @@ def sort_by_health_group_name(records):
     return quicksort(records, key_func)
 
 
-def sort_by_name_only(records):
+def sort_by_health_group_name(records):
     '''
-    Быстрая сортировка только по фамилии.
+    Специальная сортировка для отчета 3: группа + фамилия.
 
     Args:
-        records (list): Список записей
+        records (list): Список записей, нуждающихся в лечении
 
     Returns:
         list: Отсортированный список
     '''
+    group_order = {'младшая': 1, 'средняя': 2, 'старшая': 3}
 
     def key_func(record):
-        return record['фамилия'].lower()
+        group = record['группа'].lower()
+        group_num = group_order.get(group, 99)
+        return (group_num, record['фамилия'].lower())
 
     return quicksort(records, key_func)
