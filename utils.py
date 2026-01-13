@@ -32,11 +32,9 @@ def validate_date(date_str):
         if not (1 <= day_int <= 31):
             return False, 'День должен быть от 1 до 31'
 
-        # Проверка февраля
         if month_int == 2 and day_int > 29:
             return False, 'В феврале не может быть больше 29 дней'
 
-        # Проверка месяцев с 30 днями
         if month_int in [4, 6, 9, 11] and day_int > 30:
             return False, f'В месяце {month_int} не может быть больше 30 дней'
 
@@ -121,55 +119,6 @@ def needs_treatment(record):
     return False
 
 
-def process_records_batch(records):
-    '''
-    Обрабатывает пакет записей, вычисляя и кешируя часто используемые значения.
-
-    Args:
-        records (list): Список записей
-
-    Returns:
-        list: Обработанные записи с дополнительными полями
-    '''
-    processed = []
-    for record in records:
-        # Создаем копию записи с предвычисленными значениями
-        processed_record = record.copy()
-
-        # Вычисляем количество здоровых специалистов
-        healthy_count = count_healthy_specialists(record)
-        processed_record['_healthy_count'] = healthy_count
-
-        # Проверяем, нуждается ли в лечении
-        needs_treat = needs_treatment(record)
-        processed_record['_needs_treatment'] = needs_treat
-
-        # Определяем, у каких специалистов требуется лечение
-        specialists = ['невропатолог', 'отоларинголог', 'ортопед', 'окулист']
-        needs_specialists = []
-        for spec in specialists:
-            if record.get(spec, '').lower() == 'нуждается в лечении':
-                needs_specialists.append(spec)
-        processed_record['_needs_specialists'] = needs_specialists
-
-        processed.append(processed_record)
-
-    return processed
-
-
-def get_year_from_date(date_str):
-    '''
-    Быстро извлекает год из даты.
-
-    Args:
-        date_str (str): Дата в формате ГГГГ-ММ-ДД
-
-    Returns:
-        int: Год
-    '''
-    return int(date_str.split('-')[0])
-
-
 def print_record(record, index=None):
     '''
     Выводит запись о ребенке в удобочитаемом формате.
@@ -193,11 +142,9 @@ def print_record(record, index=None):
     print(f'  Ортопед: {record.get("ортопед", "НЕТ ДАННЫХ")}')
     print(f'  Окулист: {record.get("окулист", "НЕТ ДАННЫХ")}')
 
-    healthy_count = record.get('_healthy_count', count_healthy_specialists(record))
+    healthy_count = count_healthy_specialists(record)
     print(f'\nЗдоровых заключений: {healthy_count}/4')
-
-    needs_treat = record.get('_needs_treatment', needs_treatment(record))
-    if needs_treat:
+    if needs_treatment(record):
         print('СТАТУС: Требуется лечение')
     else:
         print('СТАТУС: Здоров')
@@ -226,8 +173,8 @@ def print_records_table(records, title=''):
     print('-' * 80)
 
     for i, record in enumerate(records, 1):
-        healthy = record.get('_healthy_count', count_healthy_specialists(record))
-        needs_treat = 'ЛЕЧ' if record.get('_needs_treatment', needs_treatment(record)) else '   '
+        healthy = count_healthy_specialists(record)
+        needs_treat = 'ЛЕЧ' if needs_treatment(record) else '   '
         print(f'{i:<3} {record["фамилия"]:<17} {record["имя"]:<16} '
               f'{record["группа"]:<10} {record["дата_рождения"]:<11} '
               f'{healthy:>2}/4 {needs_treat}')
@@ -236,6 +183,5 @@ def print_records_table(records, title=''):
 def clear_screen():
     '''
     Очищает экран консоли.
-    Вместо системного вызова использует вывод множества пустых строк.
     '''
     print('\n' * 50)
