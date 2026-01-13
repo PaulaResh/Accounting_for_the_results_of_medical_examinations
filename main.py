@@ -5,7 +5,6 @@
 
 from database import load_database, save_database, add_record, edit_record, delete_record
 from utils import print_record, clear_screen, print_records_table
-from utils import process_records_batch
 
 
 def show_main_menu():
@@ -24,11 +23,10 @@ def show_main_menu():
     print('3. Редактировать запись')
     print('4. Удалить запись')
     print('5. Создать отчеты')
-    print('6. Показать статистику')
-    print('7. Сохранить данные')
-    print('8. Выход')
+    print('6. Сохранить данные')
+    print('7. Выход')
 
-    return input('\nВаш выбор (1-8): ').strip()
+    return input('\nВаш выбор (1-7): ').strip()
 
 
 def show_reports_menu(records):
@@ -81,51 +79,8 @@ def view_database(records):
 
     while True:
         clear_screen()
-        print('\n' + '=' * 80)
-        print('ПРОСМОТР БАЗЫ ДАННЫХ'.center(80))
-        print('=' * 80)
 
-        # Выводим таблицу с записями
         print_records_table(records, 'ВСЕ ЗАПИСИ БАЗЫ ДАННЫХ')
-
-        # Быстрая статистика
-        print('\n' + '=' * 80)
-        print('СТАТИСТИКА:'.center(80))
-        print('-' * 80)
-
-        total = len(records)
-
-        # Одним проходом вычисляем статистику
-        groups_stats = {'младшая': 0, 'средняя': 0, 'старшая': 0}
-        healthy_all = 0
-        need_treatment_count = 0
-
-        for record in records:
-            # Группа
-            group = record['группа'].lower()
-            if group in groups_stats:
-                groups_stats[group] += 1
-
-            # Абсолютно здоровые
-            if record.get('_healthy_count', 0) == 4:
-                healthy_all += 1
-
-            # Нуждающиеся в лечении
-            if record.get('_needs_treatment', False):
-                need_treatment_count += 1
-
-        print(f'Всего детей: {total}')
-        if total > 0:
-            print(f'Абсолютно здоровых (4/4): {healthy_all} ({healthy_all / total * 100:.1f}%)')
-            print(f'Нуждающихся в лечении: {need_treatment_count} ({need_treatment_count / total * 100:.1f}%)')
-
-        # Распределение по группам
-        print('\nРаспределение по группам:')
-        for group in ['младшая', 'средняя', 'старшая']:
-            count = groups_stats[group]
-            if total > 0:
-                percentage = (count / total) * 100
-                print(f'  {group.capitalize()}: {count} детей ({percentage:.1f}%)')
 
         print('\n' + '=' * 80)
         print('КОМАНДЫ:')
@@ -343,17 +298,12 @@ def main():
             show_reports_menu(records)
 
         elif choice == '6':
-            # Показать статистику
-            from reports import show_statistics
-            show_statistics(records)
-
-        elif choice == '7':
             # Сохранение данных
             message = save_database(records)
             print(message)
             input('\nНажмите Enter для продолжения...')
 
-        elif choice == '8':
+        elif choice == '7':
             # Выход
             print('\nСохранение данных перед выходом...')
             save_message = save_database(records)
