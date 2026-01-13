@@ -25,8 +25,8 @@ def validate_date(date_str):
 
         year_int, month_int, day_int = int(year), int(month), int(day)
 
-        if not (2010 <= year_int <= 2020):
-            return False, 'Год рождения должен быть между 2010 и 2020'
+        if not (2018 <= year_int <= 2023):
+            return False, 'Год рождения должен быть между 2018 и 2023'
         if not (1 <= month_int <= 12):
             return False, 'Месяц должен быть от 1 до 12'
         if not (1 <= day_int <= 31):
@@ -185,3 +185,4 @@ def clear_screen():
     Очищает экран консоли.
     '''
     print('\n' * 50)
+
